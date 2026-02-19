@@ -66,7 +66,7 @@ function fractalize(shape::T, noise_params::NoiseParams) where T <: AbstractShap
 end
 
 
-function fractalize(shape::T, iter::Int, noise_params::NoiseParams) where T <: AbstractShape
+function fractalize(shape::T, noise_params::NoiseParams, iter::Int) where T <: AbstractShape
     fractal = fractalize(shape, noise_params)
 
     for i in 1:iter-1
