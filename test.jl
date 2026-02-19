@@ -3,8 +3,28 @@ using LinearAlgebra
 using PolygonInbounds
 
 abstract type AbstractShape end
+abstract type AbstractTemplate end
 
-struct Template
+struct NoiseParams
+    amplitude_range::AbstractRange
+    frequency_range::AbstractRange
+    phase_range::AbstractRange
+
+    resolution::Int
+    iterations::Int
+    nsamples::Int
+
+    function NoiseParams(amplitude_range, frequency_range, phase_range, resolution, iterations, nsamples)
+        if nsamples <= 0
+            nsamples = resolution
+        end
+        new(amplitude_range, frequency_range, phase_range, resolution, iterations, nsamples)
+    end
+
+
+end
+
+struct CenteredTemplate <: AbstractTemplate
 
     centroid::Vector{Float64}
     npoints::Int
@@ -14,8 +34,44 @@ struct Template
     xs::SubArray
     ys::SubArray
 
-    function Template(centroid, npoints, line_length, line_angle, points, xs, ys)
+    function CenteredTemplate(centroid, npoints, line_length, line_angle, points, xs, ys)
         new(centroid, npoints, line_length, line_angle, points, xs, ys)
+    end
+
+    function CenteredTemplate(tpoints, tcentroid, tangle)
+
+        translated_points = tpoints .- tcentroid'
+        points = translated_points*R(-tangle)
+
+        xs = view(points, :, 1)
+        ys = view(points, :, 2)
+        npoints = size(points, 1)
+        centroid = vec(sum(points, dims=1)./npoints)
+        v = [xs[end]-xs[1], ys[end]-ys[1]]
+        ref = [1, 0] # Reference vector for orientation is the x axis
+
+        line_length = norm(v)
+        line_angle = (atand(det(v, ref), dot(v, ref))+360)%360
+        new(centroid, npoints, line_length, line_angle, points, xs, ys)
+    end
+
+
+end
+
+struct Template <: AbstractTemplate
+
+    centroid::Vector{Float64}
+    npoints::Int
+    line_length::Float64
+    line_angle::Float64
+    points::Matrix{Float64}
+    xs::SubArray
+    ys::SubArray
+
+    centered::CenteredTemplate
+
+    function Template(centroid, npoints, line_length, line_angle, points, xs, ys)
+        new(centroid, npoints, line_length, line_angle, points, xs, ys, centered)
     end
 
     function Template(points)
@@ -28,7 +84,9 @@ struct Template
 
         line_length = norm(v)
         line_angle = (atand(det(v, ref), dot(v, ref))+360)%360
-        new(centroid, npoints, line_length, line_angle, points, xs, ys)
+
+        centered = CenteredTemplate(points, centroid, line_angle)
+        new(centroid, npoints, line_length, line_angle, points, xs, ys, centered)
     end
 
 
@@ -105,7 +163,6 @@ struct Shape <: AbstractShape
     end
 
 end
-
 
 struct ClosedShape <: AbstractShape
 
@@ -188,7 +245,15 @@ function remove_overlapping(x::Matrix{Float64})
     return x[.!mask,:]
 end
 
-function random_template(amplitude_range, frequency_range, phase_range, resolution, iter; nsamples=10)
+function random_template(params::NoiseParams)
+
+    amplitude_range = params.amplitude_range
+    frequency_range = params.frequency_range
+    phase_range = params.frequency_range
+    resolution = params.resolution
+    iter = params.iterations
+
+    nsamples = params.nsamples
 
     rand_index = sort(rand(1:resolution,nsamples))
     xp = range(0, 2π, resolution)
@@ -205,27 +270,16 @@ function random_template(amplitude_range, frequency_range, phase_range, resoluti
 
 end
 
-function centered_template(template::Template)
-    points = template.points
-    centroid = template.centroid
-    angle = template.line_angle
+# function make_buffer(shape::T, h) where T<:AbstractShape
+#     bpoints = copy(shape.points)
+#     for i in 1:shape.nsegments
+#         point_idxs = shape.edges[i,:]
 
-    translated_points = points .- centroid'
-    rotated_points = translated_points*R(-angle)
+#         bpoints[point_idxs, :] .+= h*shape.segment_normals[i,:]'
 
-    return Template(rotated_points)
-end
-
-function make_buffer(shape::T, h) where T<:AbstractShape
-    bpoints = copy(shape.points)
-    for i in 1:shape.nsegments
-        point_idxs = shape.edges[i,:]
-
-        bpoints[point_idxs, :] .+= h*shape.segment_normals[i,:]'
-
-    end
-    return T(bpoints)
-end
+#     end
+#     return T(bpoints)
+# end
 
 
 
@@ -258,7 +312,7 @@ function fractalize(shape::T, template::Template) where T <: AbstractShape
     for i in 1:shape.nsegments
 
         scaling_factor = shape.segment_lengths[i]/template.line_length
-        tc = centered_template(template)
+        tc = template.centered
         new_shape = tc.points*R(shape.segment_angles[i])*scaling_factor
 
         vec = new_shape[1,:] .- shape.points[i,:]
@@ -278,17 +332,17 @@ function fractalize(shape::T, template::Template) where T <: AbstractShape
     return T(final_points)
 end
 
-function fractalize(shape::T) where T <: AbstractShape
+function fractalize(shape::T, noise_params::NoiseParams) where T <: AbstractShape
 
-    fractal = Matrix{Float64}(undef, shape.nsegments*10, 2)
+    fractal = Matrix{Float64}(undef, shape.nsegments*noise_params.nsamples, 2)
     startidx = 1
-    endidx = 10
+    endidx = noise_params.nsamples
 
     for i in 1:shape.nsegments
-        template = random_template([0.1], 1:1:10, -10:1:10,100, 4)
+        template = random_template(noise_params)
 
         scaling_factor = shape.segment_lengths[i]/template.line_length
-        tc = centered_template(template)
+        tc = template.centered
         new_shape = tc.points*R(shape.segment_angles[i])*scaling_factor
 
         vec = new_shape[1,:] .- shape.points[i,:]
@@ -315,36 +369,36 @@ function fractalize(shape, template, iter::Int)
     end
     return fractal
 end
-function fractalize(shape, iter::Int)
-    fractal = fractalize(shape)
+function fractalize(shape, iter::Int, noise_params::NoiseParams)
+    fractal = fractalize(shape, noise_params)
 
     for i in 1:iter-1
-        fractal = fractalize(fractal)
+        fractal = fractalize(fractal, noise_params)
 
     end
     return fractal
 end
-
-
 
 R(θ) = [[cosd(θ), sind(θ)] [-sind(θ), cosd(θ)]]
 
 x = -2:0.005:2
 y = -2:0.005:2
 
-# X = x'.* ones(length(y))
-# Y = y .* ones(length(x))'
-
 grid = [vec(x'.* ones(length(y))) vec(y .* ones(length(x))')]
+
+
+
+noise_params = NoiseParams(0.1:0.1, 1.0:1:10.0, -10.0:1:10.0, 100, 4, 10)
+
 
 template = [[0., 0.] [1.0,1.0] [3.2, 1.0] [4.2, -0.5] [4.5, -0.9] [7.4, -1.2] [8,-0.7] [8.8,0.0] [9.0, 0.5] [9.6, 0.3]]'
 # shape = Shape(template)
 
 template = Template(template)
-rand_index = sort(rand(1:100,10))
-xp = range(0, 2π, 100)
-yp = random_noise([0.1], 1:0.1:4, -10:1:10, xp, 4)
-template = Template([xp[rand_index] yp[rand_index]])
+# rand_index = sort(rand(1:100,10))
+# xp = range(0, 2π, 100)
+# yp = random_noise([0.1], 1:0.1:4, -10:1:10, xp, 4)
+# template = Template([xp[rand_index] yp[rand_index]])
 shape = ClosedShape(circle(0.,0.,sqrt(1),5))
 
 shape = shape*R(45)
@@ -355,27 +409,31 @@ s = 1+2*h/(shape.bb[2]-shape.bb[1])
 
 fig = Figure(size = (800, 800))
 ax = Axis(fig[1,1], aspect=DataAspect())
-ax2 = Axis(fig[1,2], aspect=1)
+
+# lines!(ax, template.points)
+# lines!(ax, template.centered.points)
+
+# ax2 = Axis(fig[1,2], aspect=1)
 
 lines!(ax, shape.points)
 
-fractal = fractalize(shape,4)
+fractal = fractalize(shape,4, noise_params)
 
 buffer = shape*s
 lines!(ax, fractal.points)
 lines!(ax, buffer.points)
 
-mask = inpoly2(grid, fractal.points, fractal.edges)[:,1]
-maskb = inpoly2(grid, buffer.points, buffer.edges)[:,1]
-maskb -= mask
+# mask = inpoly2(grid, fractal.points, fractal.edges)[:,1]
+# maskb = inpoly2(grid, buffer.points, buffer.edges)[:,1]
+# maskb -= mask
 
-mask = reshape(mask, length(y), length(x))
-maskb = reshape(maskb, length(y), length(x))
+# mask = reshape(mask, length(y), length(x))
+# maskb = reshape(maskb, length(y), length(x))
 
-# # # fractal = fractalize(fractal, template)
-# # lines!(ax, fractal.points)
-# # heatmap!(ax2, x, y, mask')
-heatmap!(ax2, x, y, maskb')
+# # # # fractal = fractalize(fractal, template)
+# # # lines!(ax, fractal.points)
+# # # heatmap!(ax2, x, y, mask')
+# heatmap!(ax2, x, y, maskb')
 
 display(fig)
 
