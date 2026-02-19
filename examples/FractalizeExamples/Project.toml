@@ -1,4 +1,5 @@
 [deps]
 Fractalizer = "c0cd90ba-f482-40dc-b865-bff11b43dfb3"
 GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
+Luxor = "ae8d54c2-7ccd-5906-9d76-62fc9837b5bc"
 PolygonInbounds = "e4521ec6-8c1d-418e-9da2-b3bc4ae105d6"

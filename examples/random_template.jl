@@ -9,7 +9,7 @@ template = random_template(noise_params)
 
 shape1 = Shape(template.points)
 
-shape2 = ClosedShape(circle(0.,0.,sqrt(1),5))
+shape2 = ClosedShape(makecircle(0.,0.,sqrt(1),5))
 
 # shape2 = shape2*R(45)
 

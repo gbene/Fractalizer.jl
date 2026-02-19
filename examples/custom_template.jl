@@ -8,7 +8,7 @@ template_points = [[0., 0.] [1.0,1.0] [3.2, 1.0] [4.2, -0.5] [4.5, -0.9] [7.4, -
 template = Template(template_points)
 shape1 = Shape(template_points)
 
-shape2 = ClosedShape(circle(0.,0.,sqrt(1),5))
+shape2 = ClosedShape(makecircle(0.,0.,sqrt(1),5))
 
 # shape2 = shape2*R(45)
 

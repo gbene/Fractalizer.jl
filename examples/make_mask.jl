@@ -9,8 +9,8 @@ grid = [vec(x'.* ones(length(y))) vec(y .* ones(length(x))')]
 
 noise_params = NoiseParams(0.1:0.1, 1.0:1:10.0, -10.0:1:10.0, 100, 4, 10)
 
-shape = ClosedShape(circle(0.,0.,sqrt(1),5))
-fractal = fractalize(shape, 4, noise_params)
+shape = ClosedShape(makecircle(0.,0.,sqrt(1),5))
+fractal = fractalize(shape,  noise_params, 4)
 
 mask = inpoly2(grid, fractal.points, fractal.edges)[:,1]
 mask = reshape(mask, length(y), length(x))
