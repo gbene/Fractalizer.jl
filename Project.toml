@@ -1,3 +1,7 @@
+name = "Fractalizer"
+uuid = "c0cd90ba-f482-40dc-b865-bff11b43dfb3"
+version = "1.0.0"
+authors = ["gbene <gabri.benedetti@gmail.com>"]
+
 [deps]
-GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
-PolygonInbounds = "e4521ec6-8c1d-418e-9da2-b3bc4ae105d6"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
