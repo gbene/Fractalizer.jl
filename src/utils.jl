@@ -2,7 +2,7 @@ function vectordet(x::Vector, y::Vector)
     return x[1]*y[2] - x[2]*y[1]
 end
 
-function circle(x0, y0, r, npoints)
+function makecircle(x0, y0, r, npoints)
     θ = range(0,2π,length=npoints)
     p = @. [x0+r*sin(θ) y0+r*cos(θ)]
     p[end,:] = p[1,:]

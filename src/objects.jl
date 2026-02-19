@@ -168,6 +168,7 @@ struct ClosedShape <: AbstractShape
 
     function ClosedShape(points)
         # absmax(x) = x[argmax(abs.(x))]
+        points[end, :] = points[1,:]
 
         xs = view(points, :, 1)
         ys = view(points, :, 2)
@@ -207,7 +208,6 @@ struct ClosedShape <: AbstractShape
             edges[i,:] = [i, i+1]
         end
 
-        points[end, :] = points[1,:]
         edges[end,2] = 1
 
         bb = [[minimum(xs), maximum(xs)] [minimum(ys), maximum(ys)]]
