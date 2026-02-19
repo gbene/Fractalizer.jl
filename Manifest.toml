@@ -2,7 +2,7 @@
 
 julia_version = "1.12.3"
 manifest_format = "2.0"
-project_hash = "633087a6d07868b3553f315094e527f7106496ac"
+project_hash = "fcd7276f2fc4d18f7138f63c3f23c6d3e8ebee16"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1020,6 +1020,11 @@ deps = ["ColorSchemes", "Colors", "Dates", "PrecompileTools", "Printf", "Random"
 git-tree-sha1 = "26ca162858917496748aad52bb5d3be4d26a228a"
 uuid = "995b91a9-d308-5afd-9ec6-746e21dbc043"
 version = "1.4.4"
+
+[[deps.PolygonInbounds]]
+git-tree-sha1 = "8d50c96f4ba5e1e2fd524116b4ef97b29d5f77da"
+uuid = "e4521ec6-8c1d-418e-9da2-b3bc4ae105d6"
+version = "0.2.0"
 
 [[deps.PolygonOps]]
 git-tree-sha1 = "77b3d3605fc1cd0b42d95eba87dfcd2bf67d5ff6"

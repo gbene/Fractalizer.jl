@@ -1,80 +1,381 @@
 using GLMakie
+using LinearAlgebra
+using PolygonInbounds
+
+abstract type AbstractShape end
+
+struct Template
+
+    centroid::Vector{Float64}
+    npoints::Int
+    line_length::Float64
+    line_angle::Float64
+    points::Matrix{Float64}
+    xs::SubArray
+    ys::SubArray
+
+    function Template(centroid, npoints, line_length, line_angle, points, xs, ys)
+        new(centroid, npoints, line_length, line_angle, points, xs, ys)
+    end
+
+    function Template(points)
+        xs = view(points, :, 1)
+        ys = view(points, :, 2)
+        npoints = size(points, 1)
+        centroid = vec(sum(points, dims=1)./npoints)
+        v = [xs[end]-xs[1], ys[end]-ys[1]]
+        ref = [1, 0] # Reference vector for orientation is the x axis
+
+        line_length = norm(v)
+        line_angle = (atand(det(v, ref), dot(v, ref))+360)%360
+        new(centroid, npoints, line_length, line_angle, points, xs, ys)
+    end
+
+
+end
+
+struct Shape <: AbstractShape
+    centroid::Vector{Float64}
+    npoints::Int
+    nsegments::Int
+    segment_lengths::Vector{Float64}
+    segment_angles::Vector{Float64}
+    segment_centers::Matrix{Float64}
+
+    segment_normals::Matrix{Float64}
+
+    points::Matrix{Float64}
+    edges::Matrix{Int}
+    bb::Matrix{Float64}
+
+    xs::SubArray
+    ys::SubArray
+
+
+    function Shape(centroid, npoints, segment_lengths, segment_angles, points, xs, ys, bb, edges)
+        new(centroid, npoints, segment_lengths, segment_angles, points, xs, ys, bb, edges)
+    end
+
+    function Shape(points)
+        # absmax(x) = x[argmax(abs.(x))]
+
+        xs = view(points, :, 1)
+        ys = view(points, :, 2)
+        npoints = size(points, 1)
+        nsegments = npoints-1
+        centroid = vec(sum(points, dims=1)./npoints)
+        ref = [1, 0] # Reference vector for orientation is the x axis
+
+
+        segment_lengths = Vector{Float64}(undef, nsegments) #length of each segment
+        segment_angles = Vector{Float64}(undef, nsegments)  #direction of each segment
+        segment_centers = Matrix{Float64}(undef, nsegments, 2)  #direction of each segment
+        segment_normals = Matrix{Float64}(undef, nsegments, 2)  #direction of each segment
+
+        edges = Matrix{Int}(undef, nsegments, 2)
+
+        for i in 1:nsegments
+            A = [xs[i], ys[i]]
+            B = [xs[i+1], ys[i+1]]
+            center = (B .+ A) / 2 #[(xs[i+1]+xs[i])/2, (ys[i+1]+ys[i])/2]
+
+            A .-= center
+            B .-= center
+            v = B .- A #[xs[i+1]-xs[i], ys[i+1]-ys[i]]
+            segment_lengths[i] = norm(v)
+
+            # maxx = argmax(abs, [A[1], B[1]])
+
+            normal = [-v[2], v[1]]
+
+
+            segment_angles[i]  = (atand(det(v, ref), dot(v, ref))+360)%360
+            segment_centers[i, :] = center
+            segment_normals[i, :] = normal/norm(normal)
+
+
+            edges[i,:] = [i, i+1]
+        end
+
+        # edges[end,2] = 1
+
+        bb = [[minimum(xs), maximum(xs)] [minimum(ys), maximum(ys)]]
+
+        new(centroid, npoints, nsegments, segment_lengths, segment_angles, segment_centers, segment_normals, points, edges, bb, xs, ys)
+    end
+
+end
+
+
+struct ClosedShape <: AbstractShape
+
+    centroid::Vector{Float64}
+    npoints::Int
+    nsegments::Int
+    segment_lengths::Vector{Float64}
+    segment_angles::Vector{Float64}
+    segment_centers::Matrix{Float64}
+
+    segment_normals::Matrix{Float64}
+
+    points::Matrix{Float64}
+    edges::Matrix{Int}
+    bb::Matrix{Float64}
+
+    xs::SubArray
+    ys::SubArray
+
+
+    function ClosedShape(centroid, npoints, segment_lengths, segment_angles, points, xs, ys, bb, edges)
+        new(centroid, npoints, segment_lengths, segment_angles, points, xs, ys, bb, edges)
+    end
+
+    function ClosedShape(points)
+        # absmax(x) = x[argmax(abs.(x))]
+
+        xs = view(points, :, 1)
+        ys = view(points, :, 2)
+        npoints = size(points, 1)
+        nsegments = npoints-1
+        centroid = vec(sum(points, dims=1)./npoints)
+        ref = [1, 0] # Reference vector for orientation is the x axis
+
+
+        segment_lengths = Vector{Float64}(undef, nsegments) #length of each segment
+        segment_angles = Vector{Float64}(undef, nsegments)  #direction of each segment
+        segment_centers = Matrix{Float64}(undef, nsegments, 2)  #direction of each segment
+        segment_normals = Matrix{Float64}(undef, nsegments, 2)  #direction of each segment
+
+        edges = Matrix{Int}(undef, nsegments, 2)
+
+        for i in 1:nsegments
+            A = [xs[i], ys[i]]
+            B = [xs[i+1], ys[i+1]]
+            center = (B .+ A) / 2 #[(xs[i+1]+xs[i])/2, (ys[i+1]+ys[i])/2]
+
+            A .-= center
+            B .-= center
+            v = B .- A #[xs[i+1]-xs[i], ys[i+1]-ys[i]]
+            segment_lengths[i] = norm(v)
+
+            # maxx = argmax(abs, [A[1], B[1]])
+
+            normal = [-v[2], v[1]]
+
+
+            segment_angles[i]  = (atand(det(v, ref), dot(v, ref))+360)%360
+            segment_centers[i, :] = center
+            segment_normals[i, :] = normal/norm(normal)
+
+
+            edges[i,:] = [i, i+1]
+        end
+
+        points[end, :] = points[1,:]
+        edges[end,2] = 1
+
+        bb = [[minimum(xs), maximum(xs)] [minimum(ys), maximum(ys)]]
+
+        new(centroid, npoints, nsegments, segment_lengths, segment_angles, segment_centers, segment_normals, points, edges, bb, xs, ys)
+    end
+
+end
+
+function remove_overlapping(x::Matrix{Float64})
+    mask = vec(reduce(&, x[1:end-1,:] .≈ x[2:end,:], dims=2))
+    pushfirst!(mask, false)
+
+    return x[.!mask,:]
+end
+
+function random_template(amplitude_range, frequency_range, phase_range, resolution, iter; nsamples=10)
+
+    rand_index = sort(rand(1:resolution,nsamples))
+    xp = range(0, 2π, resolution)
+    yp = zeros(length(xp))
+
+    for i in 1:iter
+        rand_a = rand(amplitude_range)
+        rand_f = rand(frequency_range)
+        rand_p = rand(phase_range)
+        @. yp += rand_a*sin(rand_f*xp+rand_p)
+    end
+    template = Template([xp[rand_index] yp[rand_index]])
+    return template
+
+end
+
+function centered_template(template::Template)
+    points = template.points
+    centroid = template.centroid
+    angle = template.line_angle
+
+    translated_points = points .- centroid'
+    rotated_points = translated_points*R(-angle)
+
+    return Template(rotated_points)
+end
+
+function make_buffer(shape::T, h) where T<:AbstractShape
+    bpoints = copy(shape.points)
+    for i in 1:shape.nsegments
+        point_idxs = shape.edges[i,:]
+
+        bpoints[point_idxs, :] .+= h*shape.segment_normals[i,:]'
+
+    end
+    return T(bpoints)
+end
+
+
+
+function LinearAlgebra.:det(x::Vector, y::Vector)
+    return x[1]*y[2] - x[2]*y[1]
+end
+
+function Base.:*(x::T, y::Float64) where T<: AbstractShape
+    return T(x.points*y)
+end
+
+function Base.:*(x::T, y::Matrix) where T<: AbstractShape
+    return T(x.points*y)
+end
+
 
 function circle(x0, y0, r, npoints)
     θ = range(0,2π,length=npoints)
-    return @. [x0+r*sin(θ) y0+r*cos(θ)] 
+    p = @. [x0+r*sin(θ) y0+r*cos(θ)]
+    p[end,:] = p[1,:]
+    return p
 end
 
-function fractalize(shape, template)
+function fractalize(shape::T, template::Template) where T <: AbstractShape
 
-    centroid = sum(template, dims=1)./10
-
-    template_line_length = sqrt((template[end, 1]-template[1,1])^2+(template[end,2]-template[1,2])^2)
-    template_line_angle = atand((template[end, 2]-template[1, 2])/(template[end, 1]-template[1, 1]))
-
-
-    translated_template = template .- centroid
-
-    # shape = circle(0,0,1,5)
-
-    n_points   = size(shape,1)
-    n_segments = n_points-1
-    template_npoints = size(template, 1)
-
-    segment_lengths = Vector{Float64}(undef, n_segments) #length of each segment
-    segment_angles = Vector{Float64}(undef, n_segments)  #direction of each segment
-
-    for i in 1:n_segments
-        segment_lengths[i] = sqrt((shape[i+1, 1]-shape[i,1])^2+(shape[i+1, 2]-shape[i, 2])^2)
-        segment_angles[i]  = (atand((shape[i, 2]-shape[i+1, 2])/(shape[i, 1]-shape[i+1, 1])))
-
-    end
-
-    display(segment_angles)
-
-
-    scaling_factors = segment_lengths/template_line_length # scaling factor for each segment
-
-    fractal = Matrix{Float64}(undef, n_segments*template_npoints, 2)
+    fractal = Matrix{Float64}(undef, shape.nsegments*template.npoints, 2)
     startidx = 1
-    endidx = template_npoints
+    endidx = template.npoints
 
-    for i in 1:n_segments
-        new_shape = translated_template*R(segment_angles[i]-template_line_angle)*scaling_factors[i]
+    for i in 1:shape.nsegments
 
-        vec = new_shape[1,:] .- shape[i,:]
+        scaling_factor = shape.segment_lengths[i]/template.line_length
+        tc = centered_template(template)
+        new_shape = tc.points*R(shape.segment_angles[i])*scaling_factor
+
+        vec = new_shape[1,:] .- shape.points[i,:]
 
         new_shape = new_shape .- vec'
+        new_shape[1,:] = shape.points[i,:]
+        new_shape[end,:] = shape.points[i+1,:]
+
         fractal[startidx:endidx,:] = new_shape
-        
+
         startidx = endidx+1
-        endidx = endidx+template_npoints
+        endidx = endidx+template.npoints
 
     end
-    return unique(fractal,dims=1)
+    final_points = remove_overlapping(fractal)
+
+    return T(final_points)
+end
+
+function fractalize(shape::T) where T <: AbstractShape
+
+    fractal = Matrix{Float64}(undef, shape.nsegments*10, 2)
+    startidx = 1
+    endidx = 10
+
+    for i in 1:shape.nsegments
+        template = random_template([0.1], 1:1:10, -10:1:10,100, 4)
+
+        scaling_factor = shape.segment_lengths[i]/template.line_length
+        tc = centered_template(template)
+        new_shape = tc.points*R(shape.segment_angles[i])*scaling_factor
+
+        vec = new_shape[1,:] .- shape.points[i,:]
+
+        new_shape = new_shape .- vec'
+        new_shape[1,:] = shape.points[i,:]
+        new_shape[end,:] = shape.points[i+1,:]
+        fractal[startidx:endidx,:] = new_shape
+        startidx = endidx+1
+        endidx = endidx+template.npoints
+
+    end
+    final_points = remove_overlapping(fractal)
+
+    return T(final_points)
+end
+
+function fractalize(shape, template, iter::Int)
+    fractal = fractalize(shape, template)
+
+    for i in 1:iter-1
+        fractal = fractalize(fractal, template)
+
+    end
+    return fractal
+end
+function fractalize(shape, iter::Int)
+    fractal = fractalize(shape)
+
+    for i in 1:iter-1
+        fractal = fractalize(fractal)
+
+    end
+    return fractal
 end
 
 
 
-R(θ) = [[cosd(θ), -sind(θ)] [sind(θ), cosd(θ)]]
+R(θ) = [[cosd(θ), sind(θ)] [-sind(θ), cosd(θ)]]
+
+x = -2:0.005:2
+y = -2:0.005:2
+
+# X = x'.* ones(length(y))
+# Y = y .* ones(length(x))'
+
+grid = [vec(x'.* ones(length(y))) vec(y .* ones(length(x))')]
+
+template = [[0., 0.] [1.0,1.0] [3.2, 1.0] [4.2, -0.5] [4.5, -0.9] [7.4, -1.2] [8,-0.7] [8.8,0.0] [9.0, 0.5] [9.6, 0.3]]'
+# shape = Shape(template)
+
+template = Template(template)
+rand_index = sort(rand(1:100,10))
+xp = range(0, 2π, 100)
+yp = random_noise([0.1], 1:0.1:4, -10:1:10, xp, 4)
+template = Template([xp[rand_index] yp[rand_index]])
+shape = ClosedShape(circle(0.,0.,sqrt(1),5))
+
+shape = shape*R(45)
+h = 0.5
+s = 1+2*h/(shape.bb[2]-shape.bb[1])
+# buffer_shape = shape*s
 
 
-template = [[0., 0.] [2.0,1.5] [3.4, 1.0] [4.2, -0.5] [4.5, -0.9] [7.4, -1.2] [8,-0.7] [8.8,0.0] [9.0, 0.5] [9.6, 0.4]]'
-shape = circle(0,0,1,5)
+fig = Figure(size = (800, 800))
+ax = Axis(fig[1,1], aspect=DataAspect())
+ax2 = Axis(fig[1,2], aspect=1)
 
-# x = range(0, 2π, 20)
-# shape = [collect(x) sin.(x)]
+lines!(ax, shape.points)
 
-fig, ax, plt = scatterlines(shape)
+fractal = fractalize(shape,4)
 
+buffer = shape*s
+lines!(ax, fractal.points)
+lines!(ax, buffer.points)
 
-fractal = fractalize(shape, template)
-scatterlines!(ax, fractal)
+mask = inpoly2(grid, fractal.points, fractal.edges)[:,1]
+maskb = inpoly2(grid, buffer.points, buffer.edges)[:,1]
+maskb -= mask
 
-# fractal = fractalize(fractal, shape)
+mask = reshape(mask, length(y), length(x))
+maskb = reshape(maskb, length(y), length(x))
 
-# scatterlines!(ax, fractal)
-
+# # # fractal = fractalize(fractal, template)
+# # lines!(ax, fractal.points)
+# # heatmap!(ax2, x, y, mask')
+heatmap!(ax2, x, y, maskb')
 
 display(fig)
 
