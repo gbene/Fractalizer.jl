@@ -1,10 +1,12 @@
 name = "Fractalizer"
 uuid = "c0cd90ba-f482-40dc-b865-bff11b43dfb3"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["gbene <gabri.benedetti@gmail.com>"]
 
 [deps]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [compat]
+Random = "1.11.0"
 julia = "1.11"
