@@ -1,3 +1,26 @@
+
+
+"""
+    NoiseParams
+
+Type used to encapsulate the random settings for generating random templates.
+
+### Fields
+
+- `amplitude_range` -- Range of amplitudes to be used
+- `frequency_range` -- Range of frequency to be used
+- `phase_range` -- Range of phases to be used
+- `resolution` -- N of points of the generated random signal
+- `iterations` -- N of times that random signals are stacked 
+- `nsamples` -- N of samples of the final random template
+- `seed` -- seed for random generation
+
+
+### Examples
+
+- `NoiseParams(amplitude_range::AbstractRange, frequency_range::AbstractRange, phase_range::AbstractRange,
+               resolution::Int, iterations::Int, nsamples::Int, seed::Int)` -- default constructor
+"""
 struct NoiseParams
     amplitude_range::AbstractRange
     frequency_range::AbstractRange
@@ -18,6 +41,30 @@ struct NoiseParams
 
 end
 
+
+
+"""
+    random_template(params::NoiseParams)
+
+Generate a random template given the parameters in NoiseParams
+
+### Input
+
+- `params` -- NoiseParams struct with all the settings for random generation 
+
+### Output
+
+A Template object
+
+### Algorithm
+
+The random template is defined as follows:
+
+1. A random value of amplitude, frequency and phase are picked from the ranges
+2. A sine wave in (0,2π) is generated with the picked resolution and the random values
+3. A random selection of nsamples are then picked from the signal 
+
+"""
 function random_template(params::NoiseParams)
 
     if params.seed != 0
