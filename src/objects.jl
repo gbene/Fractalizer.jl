@@ -165,10 +165,11 @@ struct ClosedShape <: AbstractShape
 
     xs::SubArray
     ys::SubArray
+    l::Float64
+    w::Float64
 
-
-    function ClosedShape(centroid, npoints, segment_lengths, segment_angles, points, xs, ys, bb, edges)
-        new(centroid, npoints, segment_lengths, segment_angles, points, xs, ys, bb, edges)
+    function ClosedShape(centroid, npoints, segment_lengths, segment_angles, points, edges, bb, xs, ys, l, w)
+        new(centroid, npoints, segment_lengths, segment_angles, points, edges, bb, xs, ys, l, w)
     end
 
     function ClosedShape(points)
@@ -216,8 +217,9 @@ struct ClosedShape <: AbstractShape
         edges[end,2] = 1
 
         bb = [[minimum(xs), maximum(xs)] [minimum(ys), maximum(ys)]]
-
-        new(centroid, npoints, nsegments, segment_lengths, segment_angles, segment_centers, segment_normals, points, edges, bb, xs, ys)
+        l = bb[2]-bb[1]
+        w = bb[4]-bb[3]
+        new(centroid, npoints, nsegments, segment_lengths, segment_angles, segment_centers, segment_normals, points, edges, bb, xs, ys, l, w)
     end
 
 end
