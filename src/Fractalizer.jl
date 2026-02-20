@@ -21,7 +21,7 @@ function Base.:*(x::T, y::Matrix) where T<: AbstractShape
     return T(x.points*y)
 end
 
-export makecircle, Template, Shape, ClosedShape, fractalize, NoiseParams, random_template, R
+export makering, Template, Shape, ClosedShape, fractalize, NoiseParams, random_template, R
 
 
 end
