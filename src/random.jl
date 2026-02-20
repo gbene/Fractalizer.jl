@@ -15,7 +15,7 @@ struct NoiseParams
         if !isnan(seed)
             seed!(seed)
         end
-        new(amplitude_range, frequency_range, phase_range, resolution, iterations, nsamples)
+        new(amplitude_range, frequency_range, phase_range, resolution, iterations, nsamples, seed)
     end
 
 
