@@ -12,9 +12,6 @@ struct NoiseParams
         if nsamples <= 0
             nsamples = resolution
         end
-        if seed != 0
-            Random.seed!(seed)
-        end
         new(amplitude_range, frequency_range, phase_range, resolution, iterations, nsamples, seed)
     end
 
@@ -22,6 +19,10 @@ struct NoiseParams
 end
 
 function random_template(params::NoiseParams)
+
+    if params.seed != 0
+        Random.seed!(seed)
+    end
 
     amplitude_range = params.amplitude_range
     frequency_range = params.frequency_range
