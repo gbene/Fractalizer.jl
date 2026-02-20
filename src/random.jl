@@ -13,7 +13,7 @@ struct NoiseParams
             nsamples = resolution
         end
         if seed != 0
-            seed!(seed)
+            Random.seed!(seed)
         end
         new(amplitude_range, frequency_range, phase_range, resolution, iterations, nsamples, seed)
     end
