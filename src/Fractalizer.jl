@@ -1,7 +1,7 @@
 module Fractalizer
 
 using LinearAlgebra
-
+using Random
 
 
 include("utils.jl")

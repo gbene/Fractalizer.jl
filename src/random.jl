@@ -6,10 +6,14 @@ struct NoiseParams
     resolution::Int
     iterations::Int
     nsamples::Int
+    seed::Int
 
-    function NoiseParams(amplitude_range, frequency_range, phase_range, resolution, iterations, nsamples)
+    function NoiseParams(amplitude_range, frequency_range, phase_range, resolution, iterations, nsamples; seed::Int=NaN)
         if nsamples <= 0
             nsamples = resolution
+        end
+        if !isnan(seed)
+            seed!(seed)
         end
         new(amplitude_range, frequency_range, phase_range, resolution, iterations, nsamples)
     end
