@@ -21,7 +21,7 @@ end
 function random_template(params::NoiseParams)
 
     if params.seed != 0
-        Random.seed!(seed)
+        Random.seed!(params.seed)
     end
 
     amplitude_range = params.amplitude_range
