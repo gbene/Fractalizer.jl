@@ -13,6 +13,10 @@ function Base.:*(x::T, y::Float64) where T<: AbstractShape
     return T(x.points*y)
 end
 
+function Base.:*(x::T, y::Vector) where T<: AbstractShape
+    return T(x.points .* y')
+end
+
 function Base.:*(x::T, y::Matrix) where T<: AbstractShape
     return T(x.points*y)
 end
