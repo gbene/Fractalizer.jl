@@ -1,33 +1,21 @@
-# Fractalizer.jl documentation
+# Fractalizer.jl
 
-```@docs
-fractalize
+```@contents
 ```
 
-```@docs
-Shape
+
+
+
+
+
+## API
+
+```@index
 ```
 
-```@docs
-ClosedShape
-```
 
-```@docs
-Template
-```
 
-```@docs
-NoiseParams
-```
 
-```@docs
-random_template
-```
 
-```@docs
-makering
-```
 
-```@docs
-R
-```
+

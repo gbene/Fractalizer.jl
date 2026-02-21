@@ -67,7 +67,14 @@ end
 
 2D Rotation matrix for angle θ in degrees.
 
-``[[cosd(θ), sind(θ)] [-sind(θ), cosd(θ)]]``
+```math
+R(\\theta) = \\begin{bmatrix}
+
+\\cos{\\theta} & \\sin{\\theta}\\\\
+-\\sin{\\theta} & \\cos{\\theta}\\\\
+
+\\end{bmatrix}
+```
 
 ### Input
 

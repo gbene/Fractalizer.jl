@@ -1,9 +1,9 @@
 
 """
-    fractalize(shape::T, template::Template) where where T <: AbstractShape
-    fractalize(shape::T, noise_params::NoiseParams) where where T <: AbstractShape
-    fractalize(shape::T, template::Template, iter::Int) where where T <: AbstractShape
-    fractalize(shape::T, noise_params::NoiseParams, iter::Int) where where T <: AbstractShape
+    fractalize(shape::T, template::Template) where T <: AbstractShape
+    fractalize(shape::T, noise_params::NoiseParams) where T <: AbstractShape
+    fractalize(shape::T, template::Template, iter::Int) where T <: AbstractShape
+    fractalize(shape::T, noise_params::NoiseParams, iter::Int) where T <: AbstractShape
 
 
 Fractalize an AbstractShape using either a template or random noise with additional cumulative steps.

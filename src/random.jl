@@ -7,19 +7,20 @@ Type used to encapsulate the random settings for generating random templates.
 
 ### Fields
 
-- `amplitude_range` -- Range of amplitudes to be used
-- `frequency_range` -- Range of frequency to be used
-- `phase_range` -- Range of phases to be used
-- `resolution` -- N of points of the generated random signal
-- `iterations` -- N of times that random signals are stacked 
-- `nsamples` -- N of samples of the final random template
-- `seed` -- seed for random generation
+- `amplitude_range::AbstractRange` -- Range of amplitudes to be used
+- `frequency_range::AbstractRange` -- Range of frequency to be used
+- `phase_range::AbstractRange` -- Range of phases to be used
+- `resolution::Int` -- N of points of the generated random signal
+- `iterations::Int` -- N of times that random signals are stacked 
+- `nsamples::Int` -- N of samples of the final random template
+- `seed::Int` -- seed for random generation
 
 
 ### Examples
 
-- `NoiseParams(amplitude_range::AbstractRange, frequency_range::AbstractRange, phase_range::AbstractRange,
-               resolution::Int, iterations::Int, nsamples::Int, seed::Int)` -- default constructor
+- `noise_params = NoiseParams(0.1:0.1, 1.0:1:10.0, -10.0:1:10.0, 100, 4, 10)` -- default constructor, random seed
+
+- `noise_params = NoiseParams(0.1:0.1, 1.0:1:10.0, -10.0:1:10.0, 100, 4, 10, seed=1)` -- default constructor, fixed seed
 """
 struct NoiseParams
     amplitude_range::AbstractRange
