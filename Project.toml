@@ -1,6 +1,6 @@
 name = "Fractalizer"
 uuid = "c0cd90ba-f482-40dc-b865-bff11b43dfb3"
-version = "0.1.1"
+version = "0.1.0"
 authors = ["gbene <gabri.benedetti@gmail.com>"]
 
 [deps]
