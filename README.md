@@ -1,6 +1,7 @@
 ![icon](resources/art/icon.svg)
 
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://gabri.xyz/Fractalizer.jl)
+
 Fractalize the edges of any given curve or closed ring using either a template or random noise!
 
 # How to install
