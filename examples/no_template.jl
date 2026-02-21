@@ -7,7 +7,8 @@ noise_params = NoiseParams(0.1:0.1, 1.0:1:10.0, -10.0:1:10.0, 100, 4, 10)
 shape_points = [[0., 0.] [1.0,1.0] [3.2, 1.0] [4.2, -0.5] [4.5, -0.9] [7.4, -1.2] [8,-0.7] [8.8,0.0] [9.0, 0.5] [9.6, 0.3]]'
 
 shape1 = Shape(shape_points)
-shape2 = ClosedShape(makecircle(0.,0.,sqrt(1),5))
+shape2 = ClosedShape(makering(0.,0.,sqrt(1),5))
+shape2 = shape2 * R(-30)
 
 
 fig = Figure(size = (800, 800))
