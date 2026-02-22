@@ -9,3 +9,5 @@ if "local" in ARGS
 else
         makedocs(sitename="Fractalizer.jl", pages=pages, clean=true)
 end
+
+deploydocs(repo="github.com:gbene/Fractalizer.jl.git")
