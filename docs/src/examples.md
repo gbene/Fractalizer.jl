@@ -13,7 +13,7 @@ template_points = [[0., 0.] [1.0,1.0] [3.2, 1.0] [4.2, -0.5] [4.5, -0.9] [7.4, -
 template = Template(template_points)
 shape1 = Shape(template_points)
 
-shape2 = ClosedShape(makering(0.,0.,sqrt(1),5))
+shape2 = MakeRing(0.,0.,sqrt(1),5)
 
 
 fig = Figure(size = (800, 800))
@@ -61,7 +61,7 @@ template = random_template(noise_params)
 
 shape1 = Shape(template.points)
 
-shape2 = ClosedShape(makering(0.,0.,sqrt(1),5))
+shape2 = MakeRing(0.,0.,sqrt(1),5)
 
 fig = Figure(size = (800, 800))
 ax = Axis(fig[1,1],  title= "Depth 1")
@@ -103,7 +103,7 @@ noise_params = NoiseParams(0.1:0.1, 1.0:1:10.0, -10.0:1:10.0, 100, 4, 10)
 shape_points = [[0., 0.] [1.0,1.0] [3.2, 1.0] [4.2, -0.5] [4.5, -0.9] [7.4, -1.2] [8,-0.7] [8.8,0.0] [9.0, 0.5] [9.6, 0.3]]'
 
 shape1 = Shape(shape_points)
-shape2 = ClosedShape(makering(0.,0.,sqrt(1),5))
+shape2 = MakeRing(0.,0.,sqrt(1),5)
 shape2 = shape2 * R(-30)
 
 

@@ -5,4 +5,4 @@ pages = ["Home" => "index.md","Examples"=>"examples.md", "Types" => "types.md", 
 makedocs(sitename="Fractalizer.jl", pages=pages, clean=true)
 
 
-deploydocs(repo="github.com:gbene/Fractalizer.jl.git")
+deploydocs(repo="github.com:gbene/Fractalizer.jl.git",devbranch="dev")

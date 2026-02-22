@@ -33,7 +33,7 @@ template_points = [[0., 0.]
                    [9.6, 0.3]]'
 
 template = Template(template_points)
-shape = ClosedShape(makering(0.,0.,1,7))
+shape = MakeRing(0.,0.,sqrt(1),5)
 
 fractal = fractalize(shape, template, 4)
 ```
