@@ -1,9 +1,8 @@
-name: Documentation
+name: Dev documentation
 
 on:
   push:
     branches: ["main"]
-    tags: 'v*'
   pull_request:
 
 jobs:
@@ -17,6 +16,7 @@ jobs:
       pull-requests: read
       statuses: write
     runs-on: ubuntu-latest
+    if: "contains(github.event.head_commit.message, '[docs]')"
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@v2
