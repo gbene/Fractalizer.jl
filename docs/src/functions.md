@@ -9,7 +9,7 @@ random_template
 ```
 
 ```@docs
-makering
+MakeRing
 ```
 
 ```@docs

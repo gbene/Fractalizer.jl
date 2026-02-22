@@ -12,7 +12,7 @@ end
 
 
 """
-    makering(x0, y0, r, npoints)
+    MakeRing(x0, y0, r, npoints)
 
 Create a ring.
 
@@ -36,11 +36,11 @@ Since the output is a closed shape, the number of sides is 1-npoints. This means
 - pentagon -> npoints = 6
 - ...
 """
-function makering(x0, y0, r, npoints)
+function MakeRing(x0, y0, r, npoints)
     θ = range(0,2π,length=npoints)
     p = @. [x0+r*sin(θ) y0+r*cos(θ)]
     p[end,:] = p[1,:]
-    return p
+    return ClosedShape(p)
 end
 
 
