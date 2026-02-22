@@ -1,4 +1,4 @@
-![icon](resources/art/icon.svg)
+![icon](docs/src/assets/banner.svg)
 
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://gabri.xyz/Fractalizer.jl)
 
