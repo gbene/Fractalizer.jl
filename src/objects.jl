@@ -11,8 +11,8 @@ Private type used mainly to store a centered (0,0) and "flat" (inclination=0) co
 
 - `centroid::Vector{Float64}` -- [x, y] vector of the coordinates of the centroid of the template
 - `npoints::Int` -- Number of points of the template
-- `line_length::Float64` -- Length of the template as distance between the first and last point 
-- `line_angle::Float64` -- Inclination of the template using the first and last point.  
+- `line_length::Float64` -- Length of the template as distance between the first and last point
+- `line_angle::Float64` -- Inclination of the template using the first and last point.
 - `points::Matrix{Float64}` -- nx2 Matrix of points
 - `xs::SubArray` -- x coordinates of the points
 - `ys::SubArray` -- y coordinates of the points
@@ -70,8 +70,8 @@ Type to encapsulate templates used to fractalize.
 
 - `centroid::Vector{Float64}` -- [x, y] vector of the coordinates of the centroid of the template
 - `npoints::Int` -- Number of points of the template
-- `line_length::Float64` -- Length of the template as distance between the first and last point 
-- `line_angle::Float64` -- Inclination of the template using the first and last point.  
+- `line_length::Float64` -- Length of the template as distance between the first and last point
+- `line_angle::Float64` -- Inclination of the template using the first and last point.
 - `points::Matrix{Float64}` -- nx2 Matrix of points
 - `xs::SubArray` -- x coordinates of the points
 - `ys::SubArray` -- y coordinates of the points
@@ -129,10 +129,10 @@ Type to encapsulate shapes that need to be fractalized.
 - `centroid::Vector{Float64}` -- [x, y] vector of the coordinates of the centroid of the shape
 - `npoints::Int` -- Number of points of the shape
 - `nsegments::Int` -- Number of segments of the shape
-- `segment_lengths::Vector{Float64}` -- Lengths of each segment of the shape 
+- `segment_lengths::Vector{Float64}` -- Lengths of each segment of the shape
 - `segment_angles::Vector{Float64}` -- Azimuthal angle (0,360) of each segment in the shape, with [1,0] as reference 0°.
-- `segment_centers::Matrix{Float64}` -- Center of each segment of the shape.  
-- `segment_normals::Matrix{Float64}` -- Normals of each segment of the shape.  
+- `segment_centers::Matrix{Float64}` -- Center of each segment of the shape.
+- `segment_normals::Matrix{Float64}` -- Normals of each segment of the shape.
 - `points::Matrix{Float64}` -- nx2 Matrix of points
 - `edges::Matrix{Int}` -- nx2 connectivity Matrix indicating the indexes of the points that define the segment
 - `bb::Matrix{Float64}` -- 4x2 Matrix indicating the bounding box of the shape. [[minimum(xs), maximum(xs)] [minimum(ys), maximum(ys)]]
@@ -167,10 +167,11 @@ struct Shape <: AbstractShape
     ys::SubArray
     l::Float64
     w::Float64
+    min_template_length::Ref{Float64}
 
 
-    function Shape(centroid, npoints, segment_lengths, segment_angles, points, edges, bb, xs, ys, l, w)
-        new(centroid, npoints, segment_lengths, segment_angles, points, edges, bb, xs, ys, l, w)
+    function Shape(centroid, npoints, segment_lengths, segment_angles, points, edges, bb, xs, ys, l, w, min_template_length)
+        new(centroid, npoints, segment_lengths, segment_angles, points, edges, bb, xs, ys, l, w, min_template_length)
     end
 
     function Shape(points)
@@ -220,8 +221,10 @@ struct Shape <: AbstractShape
         l = bb[2]-bb[1]
         w = bb[4]-bb[3]
 
-
-        new(centroid, npoints, nsegments, segment_lengths, segment_angles, segment_centers, segment_normals, points, edges, bb, xs, ys, l, w)
+        min_template_length = Ref(Inf)
+        new(centroid, npoints, nsegments,
+            segment_lengths, segment_angles, segment_centers, segment_normals,
+            points, edges, bb, xs, ys, l, w, min_template_length)
     end
 
 end
@@ -236,10 +239,10 @@ Type to encapsulate closed shapes that need to be fractalized (i.e. rings or clo
 - `centroid::Vector{Float64}` -- [x, y] vector of the coordinates of the centroid of the shape
 - `npoints::Int` -- Number of points of the shape
 - `nsegments::Int` -- Number of segments of the shape
-- `segment_lengths::Vector{Float64}` -- Lengths of each segment of the shape 
+- `segment_lengths::Vector{Float64}` -- Lengths of each segment of the shape
 - `segment_angles::Vector{Float64}` -- Azimuthal angle (0,360) of each segment in the shape, with [1,0] as reference 0°.
-- `segment_centers::Matrix{Float64}` -- Center of each segment of the shape.  
-- `segment_normals::Matrix{Float64}` -- Normals of each segment of the shape.  
+- `segment_centers::Matrix{Float64}` -- Center of each segment of the shape.
+- `segment_normals::Matrix{Float64}` -- Normals of each segment of the shape.
 - `points::Matrix{Float64}` -- nx2 Matrix of points
 - `edges::Matrix{Int}` -- nx2 connectivity Matrix indicating the indexes of the points that define the segment
 - `bb::Matrix{Float64}` -- 4x2 Matrix indicating the bounding box of the shape. [[minimum(xs), maximum(xs)] [minimum(ys), maximum(ys)]]
@@ -250,7 +253,7 @@ Type to encapsulate closed shapes that need to be fractalized (i.e. rings or clo
 
 ### Notes
 - `xs` and `ys` are views of `points`
-- The last and first points of the shape coincide. This is automatically done when inputting a matrix of points. 
+- The last and first points of the shape coincide. This is automatically done when inputting a matrix of points.
 
 ### Examples
 
