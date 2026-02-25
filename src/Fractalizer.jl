@@ -2,6 +2,7 @@ module Fractalizer
 
 using LinearAlgebra
 using Random
+using Statistics
 
 
 include("utils.jl")
@@ -21,7 +22,7 @@ function Base.:*(x::T, y::Matrix) where T<: AbstractShape
     return T(x.points*y)
 end
 
-export MakeRing, Template, Shape, ClosedShape, fractalize, NoiseParams, random_template, R
+export MakeRing, Template, RandomTemplate, Shape, ClosedShape, fractalize, NoiseParams, random_template, R
 
 
 end

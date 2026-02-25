@@ -45,20 +45,20 @@ end
 
 
 """
-    remove_overlapping(x::Matrix{Float64})
+    non_overlapping(x::Matrix{Float64})
 
-Private function used to remove points that are very closed (using ≈). 
-    
+Private function used to return non overlapping points.
+
 ### Notes
 
-This is mainly used to clean up the final ClosedShape. There is an imposed rule where the first point 
-is always marked as non overlapping.
+This is mainly used to clean up the final ClosedShape. Overlapping points are defined as those that are very close (using ≈).
+There is an imposed rule where the first point is always marked as non overlapping.
 """
-function remove_overlapping(x::Matrix{Float64})
-    mask = vec(reduce(&, x[1:end-1,:] .≈ x[2:end,:], dims=2))
-    pushfirst!(mask, false)
+function non_overlapping(x::Matrix{Float64})
+    mask = .!(vec(reduce(&, x[1:end-1,:] .≈ x[2:end,:], dims=2)))
+    pushfirst!(mask, true)
 
-    return x[.!mask,:]
+    return x[mask,:], mask
 end
 
 
@@ -78,7 +78,7 @@ R(\\theta) = \\begin{bmatrix}
 
 ### Input
 
-- θ -- Rotation angle in degrees. 
+- θ -- Rotation angle in degrees.
 
 ### Output
 
