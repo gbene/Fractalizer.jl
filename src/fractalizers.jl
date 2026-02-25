@@ -18,7 +18,7 @@ Fractalize an AbstractShape using either a template or random noise.
 - `template` -- Template used to fractalize
 - `noise_params` -- Settings for the random noise
 - `depth` -- Depth of the fractal i.e. number of times that the template is iteratevely applied to the shape
-- `target_length` -- Minimum length value of the template to reach before stopping iteratevely applying the shape
+- `target_length` -- Mean semgnet length of the final shape to reach before stopping
 
 ### Output
 
@@ -71,7 +71,7 @@ function fractalize(shape::T, template::AbstractTemplate) where T <: AbstractSha
     final_points, mask = non_overlapping(fractal)
     fshape = T(final_points)
 
-    fshape.min_template_length[] = minimum(shape.segment_lengths)
+    # fshape.min_template_length[] = minimum(shape.segment_lengths)
 
     fshape.segment_ids .= segment_ids[mask[2:end]]
 
