@@ -61,7 +61,7 @@ end
 """
     CenteredTemplate <: AbstractTemplate
 
-Private type used mainly to store a centered (0,0) and "flat" (inclination=0) copy of a Tamplate.
+Private type used to store a centered (0,0) and "flat" (inclination=0) copy of a Tamplate.
 
 ### Fields
 
@@ -84,16 +84,12 @@ Private type used mainly to store a centered (0,0) and "flat" (inclination=0) co
 """
 struct CenteredTemplate <: AbstractTemplate
 
-    centroid::Vector{Float64}
-    npoints::Int
-    line_length::Float64
-    line_angle::Float64
     points::Matrix{Float64}
     xs::SubArray
     ys::SubArray
 
-    function CenteredTemplate(centroid, npoints, line_length, line_angle, points, xs, ys)
-        new(centroid, npoints, line_length, line_angle, points, xs, ys)
+    function CenteredTemplate(points::Matrix{Float64}, xs::SubArray, ys::SubArray)
+        new(points, xs, ys)
     end
 
     function CenteredTemplate(tpoints, tcentroid, tangle)
@@ -103,14 +99,8 @@ struct CenteredTemplate <: AbstractTemplate
 
         xs = view(points, :, 1)
         ys = view(points, :, 2)
-        npoints = size(points, 1)
-        centroid = vec(sum(points, dims=1)./npoints)
-        v = [xs[end]-xs[1], ys[end]-ys[1]]
-        ref = [1, 0] # Reference vector for orientation is the x axis
 
-        line_length = norm(v)
-        line_angle = (atand(vectordet(v, ref), dot(v, ref))+360)%360
-        new(centroid, npoints, line_length, line_angle, points, xs, ys)
+        new(points, xs, ys)
     end
 
 
