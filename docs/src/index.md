@@ -18,25 +18,35 @@ or
 
 Here is a basic example to reproduce the fractal in the logo
 
-```julia 
+```@example 
+using CairoMakie #hide
 using Fractalizer
 
-template_points = [[0., 0.] 
-                   [1.0,1.0] 
-                   [3.2, 1.0] 
-                   [4.2, -0.5] 
-                   [4.5, -0.9] 
-                   [7.4, -1.2] 
-                   [8,-0.7] 
-                   [8.8,0.0] 
-                   [9.0, 0.5]
+template_points = [[0., 0.];;
+                   [1.0, 1.0];;
+                   [3.2, 1.0];;
+                   [4.2, -0.5];;
+                   [4.5, -0.9];;
+                   [7.4, -1.2];;
+                   [8,-0.7];;
+                   [8.8,0.0];;
+                   [9.0, 0.5];;
                    [9.6, 0.3]]'
 
 template = Template(template_points)
-shape = ClosedShape(makering(0.,0.,1,7))
+shape = MakeRing(0.,0.,sqrt(1),7)
 
-fractal = fractalize(shape, template, 4)
+fractal = fractalize(shape, template, 3)
+shape = shape * R(-7)
+
+fig = Figure(size=(800,800))#hide
+ax = Axis(fig[1,1], aspect=DataAspect())#hide
+lines!(ax, shape.xs, shape.ys)#hide
+lines!(ax, fractal.xs, fractal.ys)#hide
+
+save("../src/assets/examples/logo.png", fig); nothing #hide
 ```
+![](assets/examples/logo.png)
 
 Easy as that!!
 For more examples and information please consult the [Examples](@ref examples) page.
